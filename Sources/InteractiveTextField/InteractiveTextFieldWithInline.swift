@@ -1,26 +1,10 @@
 import UIKit
 
-public protocol InteractiveTextFieldWithInlineDelegate: AnyObject {
-    func didTapRightView(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField)
-    func didTapTextFieldMask(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField)
-    func textDidChange(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField)
-    func textFieldDidBeginEditing(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField)
-    func textFieldDidEndEditing(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField)
-}
-
-public extension InteractiveTextFieldWithInlineDelegate {
-    func didTapRightView(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField) {}
-    func didTapTextFieldMask(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField) {}
-    func textDidChange(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField) {}
-    func textFieldDidBeginEditing(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField) {}
-    func textFieldDidEndEditing(_ wrap: InteractiveTextFieldWithInline, textField: InteractiveTextField) {}
-}
-
 open class InteractiveTextFieldWithInline: UIStackView {
     
     public var delegate: InteractiveTextFieldWithInlineDelegate?
     
-    public var inlineView: SMIconLabel {
+    public var inlineView: InteractiveInline {
         inlineLabel
     }
     
@@ -88,7 +72,7 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     public var inlineLabelIconPadding: CGFloat = 4 {
         didSet {
-            inlineLabel.iconPadding = inlineLabelIconPadding
+            inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
         }
     }
     
@@ -252,12 +236,11 @@ open class InteractiveTextFieldWithInline: UIStackView {
         }
     }
     
-    fileprivate let inlineLabel: SMIconLabel = {
-        let label = SMIconLabel()
+    fileprivate let inlineLabel: InteractiveInline = {
+        let label = InteractiveInline()
         label.backgroundColor = .clear
         label.clipsToBounds = true
         label.textAlignment = .left
-        label.numberOfLines = 0
         label.isUserInteractionEnabled = false
         return label
     }()
@@ -265,6 +248,10 @@ open class InteractiveTextFieldWithInline: UIStackView {
     fileprivate var textField: InteractiveTextField!
     
     public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
+        var frame = frame
+        if frame.height == 0 {
+            frame.size.height = textFieldHeight
+        }
         textField = InteractiveTextField(frame: frame, config: config)
         super.init(frame: frame)
         commitUI()
@@ -273,13 +260,14 @@ open class InteractiveTextFieldWithInline: UIStackView {
     required public init(coder: NSCoder) {
         textField = InteractiveTextField()
         super.init(coder: coder)
+        heightConstraint?.priority = UILayoutPriority(250)
         commitUI()
     }
     
     open override func layoutSubviews() {
         super.layoutSubviews()
-        textField.frame.size.height = textFieldHeight
         textField.heightConstraint?.constant = textFieldHeight
+        updateInlineMessageVisibility()
     }
     
 }
@@ -296,13 +284,10 @@ extension InteractiveTextFieldWithInline {
         inlineLabel.icon = isNilOrEmpty ? nil : inlineLabelIcon
         spacing = isNilOrEmpty ? 0 : inlineVerticalSpacing
         
-        inlineLabel.sizeToFit()
         inlineLabel.isHidden = isNilOrEmpty
-        
-        let inlineHeight = isNilOrEmpty ? 0 : inlineLabel.frame.height
+        let inlineHeight = isNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
         let updatedHeight = textFieldHeight + spacing + inlineHeight
         frame.size.height = updatedHeight
-        heightConstraint?.constant = updatedHeight
     }
     
     private func commitUI() {
@@ -312,7 +297,7 @@ extension InteractiveTextFieldWithInline {
         addArrangedSubview(inlineLabel)
         
         inlineLabel.font = inlineFont
-        inlineLabel.iconPadding = inlineLabelIconPadding
+        inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
         
         if let icon = inlineLabelIcon {
             inlineLabel.icon = icon
