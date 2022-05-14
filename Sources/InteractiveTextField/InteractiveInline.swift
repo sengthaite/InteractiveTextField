@@ -88,6 +88,7 @@ public class InteractiveInline: UIStackView {
 extension InteractiveInline {
     
     private func commitUI() {
+        clipsToBounds = true
         iconWrapper.addSubview(iconView)
         addArrangedSubview(iconView)
         addArrangedSubview(label)
@@ -95,12 +96,14 @@ extension InteractiveInline {
     
     private func layoutUI() {
         let iconSize = icon?.size ?? iconSize
+        iconWrapper.frame = CGRect(x: 0, y: 0, width: iconSize.width + iconPadding.left + iconPadding.right, height: bounds.height)
         iconView.frame = CGRect(x: iconPadding.left, y: iconPadding.top, width: iconSize.width, height: iconSize.height)
-        iconWrapper.frame.size.width = iconSize.width + iconPadding.left + iconPadding.right
         label.frame = CGRect(x: iconWrapper.frame.maxX, y: 0, width: bounds.width - iconWrapper.frame.maxX, height: 0)
         label.numberOfLines = numberOfLines
-        label.sizeToFit()
-        label.frame.size.height = label.frame.height
+        if numberOfLines == 0 {
+            label.sizeToFit()
+            label.frame.size.height = label.frame.height
+        }
     }
     
 }

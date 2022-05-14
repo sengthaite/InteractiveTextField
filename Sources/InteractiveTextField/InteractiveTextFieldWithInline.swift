@@ -260,22 +260,23 @@ open class InteractiveTextFieldWithInline: UIStackView {
     required public init(coder: NSCoder) {
         textField = InteractiveTextField()
         super.init(coder: coder)
+        if let height = heightConstraint?.constant {
+            textFieldHeight = height
+        }
         heightConstraint?.priority = UILayoutPriority(250)
         commitUI()
+        textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
     }
-    
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-        textField.heightConstraint?.constant = textFieldHeight
-        updateInlineMessageVisibility()
-    }
-    
 }
 
 extension InteractiveTextFieldWithInline {
     
+    private var isInlineNilOrEmpty: Bool {
+        validationMessage?.isEmpty ?? true
+    }
+    
     private func updateInlineMessageVisibility() {
-        let isNilOrEmpty = validationMessage?.isEmpty ?? true
+        let isNilOrEmpty = isInlineNilOrEmpty
         
         inlineLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 0)
         inlineLabel.font = inlineFont
@@ -295,6 +296,8 @@ extension InteractiveTextFieldWithInline {
         
         addArrangedSubview(textField)
         addArrangedSubview(inlineLabel)
+        
+        inlineLabel.isHidden = isInlineNilOrEmpty
         
         inlineLabel.font = inlineFont
         inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
