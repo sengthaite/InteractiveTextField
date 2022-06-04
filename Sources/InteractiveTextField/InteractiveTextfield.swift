@@ -228,6 +228,7 @@ open class InteractiveTextField: UITextField {
                 placeholderLabel.isHidden = true
                 return
             }
+            placeholderLabel.isHidden = style == .normal ? true : false
             placeholderLabel.font = placeholderFont
             placeholderLabel.text = placeholder
             placeholderLabel.textColor = uiConfig.placeholderColor
@@ -242,6 +243,7 @@ open class InteractiveTextField: UITextField {
                 placeholderLabel.isHidden = true
                 return
             }
+            placeholderLabel.isHidden = style == .normal ? true : false
             placeholderLabel.attributedText = attributedPlaceholder
         }
     }

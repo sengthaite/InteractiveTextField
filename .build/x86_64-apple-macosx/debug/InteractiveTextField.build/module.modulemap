@@ -1,0 +1,4 @@
+module InteractiveTextField {
+    header "/Users/sengthaite/Desktop/Learning/InteractiveTextField/.build/x86_64-apple-macosx/debug/InteractiveTextField.build/InteractiveTextField-Swift.h"
+    requires objc
+}

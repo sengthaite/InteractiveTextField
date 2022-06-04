@@ -8,6 +8,8 @@ open class InteractiveTextFieldWithInline: UIStackView {
         inlineLabel
     }
     
+    fileprivate var textFieldHeightDidSet: Bool = false
+    
     public var textFieldHeight: CGFloat = 54 {
         didSet {
             layoutIfNeeded()
@@ -34,7 +36,13 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     public var inlineLabelIcon: UIImage? {
         didSet {
+            guard let inlineLabelIcon = inlineLabelIcon else {
+                return
+            }
             inlineLabel.icon = inlineLabelIcon
+            if inlineIconSize == .zero {
+                inlineIconSize = inlineLabel.iconSize
+            }
         }
     }
     
@@ -43,8 +51,6 @@ open class InteractiveTextFieldWithInline: UIStackView {
             inlineLabel.textColor = inlineLabelTextColor
         }
     }
-    
-    public var inlineVerticalSpacing: CGFloat = 8
     
     public var inlineFontSize: CGFloat = 12
     
@@ -68,6 +74,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
             self.textField.resignFirstResponder()
         }
         return super.resignFirstResponder()
+    }
+    
+    public var inlineIconSize: CGSize = .zero {
+        didSet {
+            inlineLabel.iconSize = inlineIconSize
+        }
     }
     
     public var inlineLabelIconPadding: CGFloat = 4 {
@@ -210,6 +222,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
         }
     }
     
+    public var numberOfLines: Int = 0 {
+        didSet {
+            inlineLabel.numberOfLines = 0
+        }
+    }
+    
     public var numberFormatter: NumberFormatter? {
         didSet {
             textField.numberFormatter = numberFormatter
@@ -247,13 +265,21 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     fileprivate var textField: InteractiveTextField!
     
-    public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
-        var frame = frame
-        if frame.height == 0 {
-            frame.size.height = textFieldHeight
+    open override var frame: CGRect {
+        willSet (newValue) {
+            if frame.height != newValue.height && frame.height == .zero {
+                textFieldHeight = newValue.height
+            }
         }
+    }
+    
+    public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
         textField = InteractiveTextField(frame: frame, config: config)
         super.init(frame: frame)
+        if frame.height > .zero {
+            textFieldHeight = frame.height
+        }
+        backgroundColor = .lightGray
         commitUI()
     }
     
@@ -271,35 +297,33 @@ open class InteractiveTextFieldWithInline: UIStackView {
 
 extension InteractiveTextFieldWithInline {
     
-    private var isInlineNilOrEmpty: Bool {
+    fileprivate var isInlineNilOrEmpty: Bool {
         validationMessage?.isEmpty ?? true
     }
     
-    private func updateInlineMessageVisibility() {
-        let isNilOrEmpty = isInlineNilOrEmpty
-        
-        inlineLabel.frame = CGRect(x: 0, y: 0, width: bounds.width, height: 0)
-        inlineLabel.font = inlineFont
-        inlineLabel.numberOfLines = 0
+    fileprivate func updateInlineMessageVisibility() {
         inlineLabel.text = validationMessage
-        inlineLabel.icon = isNilOrEmpty ? nil : inlineLabelIcon
-        spacing = isNilOrEmpty ? 0 : inlineVerticalSpacing
-        
-        inlineLabel.isHidden = isNilOrEmpty
-        let inlineHeight = isNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
-        let updatedHeight = textFieldHeight + spacing + inlineHeight
-        frame.size.height = updatedHeight
+        inlineLabel.isHidden = isInlineNilOrEmpty
+        layoutIfNeeded()
+        if let _ = validationMessage {
+            let inlineHeight = isInlineNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+            let updatedHeight = textFieldHeight + spacing + inlineHeight
+            frame.size.height = updatedHeight
+        } else {
+            frame.size.height = textFieldHeight
+        }
     }
     
-    private func commitUI() {
+    fileprivate func commitUI() {
         axis = .vertical
         
         addArrangedSubview(textField)
         addArrangedSubview(inlineLabel)
         
         inlineLabel.isHidden = isInlineNilOrEmpty
-        
         inlineLabel.font = inlineFont
+        inlineLabel.iconSize = inlineIconSize
+        inlineLabel.numberOfLines = numberOfLines
         inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
         
         if let icon = inlineLabelIcon {
