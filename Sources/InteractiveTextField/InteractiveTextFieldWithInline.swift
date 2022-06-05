@@ -4,11 +4,18 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     public var delegate: InteractiveTextFieldWithInlineDelegate?
     
+    fileprivate var updatedFrame: CGRect = .zero
+    
     public var inlineView: InteractiveInline {
         inlineLabel
     }
     
-    fileprivate var textFieldFrame: CGRect = .zero
+    public var textFieldHeight: CGFloat = 54 {
+        didSet {
+            updatedFrame = .zero
+            layoutSubviews()
+        }
+    }
     
     public var textFieldConstraintHeight: CGFloat? = nil {
         didSet {
@@ -23,13 +30,6 @@ open class InteractiveTextFieldWithInline: UIStackView {
                 return
             }
             textFieldHeightConstraint.constant = height
-        }
-    }
-    
-    public var shouldUpdateTextFieldFrame: Bool = false {
-        didSet {
-            textFieldFrame = .zero
-            updateInlineMessageVisibility()
         }
     }
     
@@ -283,8 +283,8 @@ open class InteractiveTextFieldWithInline: UIStackView {
     fileprivate var textField: InteractiveTextField!
     
     public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
-        textFieldFrame = frame
         textField = InteractiveTextField(frame: frame, config: config)
+        updatedFrame = frame
         super.init(frame: frame)
         commitUI()
     }
@@ -292,11 +292,16 @@ open class InteractiveTextFieldWithInline: UIStackView {
     required public init(coder: NSCoder) {
         textField = InteractiveTextField()
         super.init(coder: coder)
-        textField.heightAnchor.constraint(equalToConstant: textFieldConstraintHeight ?? heightConstraint?.constant ?? 0).isActive = true
-        if let heightConstraint = heightConstraint {
-            removeConstraint(heightConstraint)
+        if let _ = heightConstraints {
+            removeHeightConstraint()
+            textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
         }
         commitUI()
+    }
+    
+    open override func layoutSubviews() {
+        super.layoutSubviews()
+        performLayoutChange()
     }
 }
 
@@ -306,26 +311,28 @@ extension InteractiveTextFieldWithInline {
         validationMessage?.isEmpty ?? true
     }
     
-    fileprivate var inlineHeight: CGFloat {
-        isInlineNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+    fileprivate var selfHeight: CGFloat {
+        isInlineNilOrEmpty ? textFieldHeight : textFieldHeight + spacing + inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+    }
+    
+    fileprivate func performLayoutChange() {
+        var newFrame = frame
+        newFrame.size.height = selfHeight
+        if updatedFrame != newFrame {
+            updatedFrame = newFrame
+            textField.frame.size.height = textFieldHeight
+            frame = newFrame
+        } else {
+            textField.removeHeightConstraint()
+            textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
+        }
     }
     
     fileprivate func updateInlineMessageVisibility() {
         inlineLabel.text = validationMessage
         inlineLabel.isHidden = isInlineNilOrEmpty
-        layoutIfNeeded()
-        if textFieldFrame == .zero {
-            textFieldFrame = bounds
-            textField.frame = bounds
-        }
-        var fullFrame = frame
-        if !isInlineNilOrEmpty {
-            fullFrame.size.height = textFieldFrame.height + spacing + inlineHeight
-            frame = fullFrame
-        } else {
-            fullFrame.size.height = textFieldFrame.height
-            frame = fullFrame
-        }
+        updatedFrame = .zero
+        performLayoutChange()
     }
     
     fileprivate func commitUI() {
@@ -374,8 +381,21 @@ extension InteractiveTextFieldWithInline {
 
 fileprivate extension UIView {
     
+    @discardableResult
+    func removeHeightConstraint()-> [NSLayoutConstraint]? {
+        guard let heightConstraints = heightConstraints else {
+            return nil
+        }
+        removeConstraints(heightConstraints)
+        return heightConstraints
+    }
+    
+    var heightConstraints: [NSLayoutConstraint]? {
+        constraints.filter { $0.firstAttribute == .height || $0.secondAttribute == .height }
+    }
+    
     var heightConstraint: NSLayoutConstraint? {
-        constraints.filter { $0.firstAttribute == .height }.first
+        heightConstraints?.first
     }
     
 }

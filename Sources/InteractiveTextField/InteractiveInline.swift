@@ -11,7 +11,7 @@ public class InteractiveInline: UIStackView {
     
     public override func sizeToFit() {
         super.sizeToFit()
-        layoutUI()
+        layoutSubviews()
     }
     
     var icon: UIImage? {
@@ -22,13 +22,13 @@ public class InteractiveInline: UIStackView {
     
     var iconSize: CGSize = CGSize(width: 14, height: 14) {
         didSet {
-            layoutUI()
+            layoutSubviews()
         }
     }
     
     var iconPadding: UIEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4) {
         didSet {
-            layoutUI()
+            layoutSubviews()
         }
     }
     
@@ -80,7 +80,15 @@ public class InteractiveInline: UIStackView {
     
     public override func layoutSubviews() {
         super.layoutSubviews()
-        layoutUI()
+        let iconSize = icon?.size ?? iconSize
+        iconWrapper.frame = CGRect(x: 0, y: 0, width: iconSize.width + iconPadding.left + iconPadding.right, height: bounds.height)
+        iconView.frame = CGRect(x: iconPadding.left, y: iconPadding.top, width: iconSize.width, height: iconSize.height)
+        label.frame = CGRect(x: iconWrapper.frame.maxX, y: 0, width: bounds.width - iconWrapper.frame.maxX, height: 0)
+        label.numberOfLines = numberOfLines
+        if numberOfLines == 0 {
+            label.sizeToFit()
+            label.frame.size.height = label.frame.height
+        }
     }
     
 }
@@ -92,18 +100,6 @@ extension InteractiveInline {
         iconWrapper.addSubview(iconView)
         addArrangedSubview(iconView)
         addArrangedSubview(label)
-    }
-    
-    private func layoutUI() {
-        let iconSize = icon?.size ?? iconSize
-        iconWrapper.frame = CGRect(x: 0, y: 0, width: iconSize.width + iconPadding.left + iconPadding.right, height: bounds.height)
-        iconView.frame = CGRect(x: iconPadding.left, y: iconPadding.top, width: iconSize.width, height: iconSize.height)
-        label.frame = CGRect(x: iconWrapper.frame.maxX, y: 0, width: bounds.width - iconWrapper.frame.maxX, height: 0)
-        label.numberOfLines = numberOfLines
-        if numberOfLines == 0 {
-            label.sizeToFit()
-            label.frame.size.height = label.frame.height
-        }
     }
     
 }
