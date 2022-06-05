@@ -8,11 +8,28 @@ open class InteractiveTextFieldWithInline: UIStackView {
         inlineLabel
     }
     
-    fileprivate var textFieldHeightDidSet: Bool = false
+    fileprivate var textFieldFrame: CGRect = .zero
     
-    public var textFieldHeight: CGFloat = 54 {
+    public var textFieldConstraintHeight: CGFloat? = nil {
         didSet {
-            layoutIfNeeded()
+            guard let height = textFieldConstraintHeight else {
+                if let textFieldHeightCostraint = textField.heightConstraint {
+                    textField.removeConstraint(textFieldHeightCostraint)
+                }
+                return
+            }
+            guard let textFieldHeightConstraint = textField.heightConstraint else {
+                textField.heightAnchor.constraint(equalToConstant: height).isActive = true
+                return
+            }
+            textFieldHeightConstraint.constant = height
+        }
+    }
+    
+    public var shouldUpdateTextFieldFrame: Bool = false {
+        didSet {
+            textFieldFrame = .zero
+            updateInlineMessageVisibility()
         }
     }
     
@@ -265,33 +282,21 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     fileprivate var textField: InteractiveTextField!
     
-    open override var frame: CGRect {
-        willSet (newValue) {
-            if frame.height != newValue.height && frame.height == .zero {
-                textFieldHeight = newValue.height
-            }
-        }
-    }
-    
     public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
+        textFieldFrame = frame
         textField = InteractiveTextField(frame: frame, config: config)
         super.init(frame: frame)
-        if frame.height > .zero {
-            textFieldHeight = frame.height
-        }
-        backgroundColor = .lightGray
         commitUI()
     }
     
     required public init(coder: NSCoder) {
         textField = InteractiveTextField()
         super.init(coder: coder)
-        if let height = heightConstraint?.constant {
-            textFieldHeight = height
+        textField.heightAnchor.constraint(equalToConstant: textFieldConstraintHeight ?? heightConstraint?.constant ?? 0).isActive = true
+        if let heightConstraint = heightConstraint {
+            removeConstraint(heightConstraint)
         }
-        heightConstraint?.priority = UILayoutPriority(250)
         commitUI()
-        textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
     }
 }
 
@@ -301,20 +306,30 @@ extension InteractiveTextFieldWithInline {
         validationMessage?.isEmpty ?? true
     }
     
+    fileprivate var inlineHeight: CGFloat {
+        isInlineNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+    }
+    
     fileprivate func updateInlineMessageVisibility() {
         inlineLabel.text = validationMessage
         inlineLabel.isHidden = isInlineNilOrEmpty
         layoutIfNeeded()
-        if let _ = validationMessage {
-            let inlineHeight = isInlineNilOrEmpty ? 0 : inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
-            let updatedHeight = textFieldHeight + spacing + inlineHeight
-            frame.size.height = updatedHeight
+        if textFieldFrame == .zero {
+            textFieldFrame = bounds
+            textField.frame = bounds
+        }
+        var fullFrame = frame
+        if !isInlineNilOrEmpty {
+            fullFrame.size.height = textFieldFrame.height + spacing + inlineHeight
+            frame = fullFrame
         } else {
-            frame.size.height = textFieldHeight
+            fullFrame.size.height = textFieldFrame.height
+            frame = fullFrame
         }
     }
     
     fileprivate func commitUI() {
+        arrangedSubviews.forEach({$0.removeFromSuperview()})
         axis = .vertical
         
         addArrangedSubview(textField)
