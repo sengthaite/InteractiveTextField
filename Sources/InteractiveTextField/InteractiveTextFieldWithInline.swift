@@ -44,9 +44,6 @@ open class InteractiveTextFieldWithInline: UIStackView {
                 return
             }
             inlineLabel.icon = inlineLabelIcon
-            if inlineIconSize == .zero {
-                inlineIconSize = inlineLabel.iconSize
-            }
         }
     }
     
@@ -80,7 +77,7 @@ open class InteractiveTextFieldWithInline: UIStackView {
         return super.resignFirstResponder()
     }
     
-    public var inlineIconSize: CGSize = .zero {
+    public var inlineIconSize: CGSize = CGSize(width: 14, height: 14) {
         didSet {
             inlineLabel.iconSize = inlineIconSize
         }
@@ -88,7 +85,7 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     public var inlineLabelIconPadding: CGFloat = 4 {
         didSet {
-            inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
+            inlineLabel.spacing = inlineLabelIconPadding * 2
         }
     }
     
@@ -282,7 +279,6 @@ open class InteractiveTextFieldWithInline: UIStackView {
             updatedTextFieldHeight = frame.height
         }
         super.init(frame: frame)
-        commitUI()
     }
     
     required public init(coder: NSCoder) {
@@ -292,9 +288,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
             if heightConstraint.constant > .zero {
                 updatedTextFieldHeight = heightConstraint.constant
             }
-            removeHeightConstraint()
             textField.heightAnchor.constraint(equalToConstant: updatedTextFieldHeight).isActive = true
         }
+    }
+    
+    open override func didMoveToSuperview() {
+        super.didMoveToSuperview()
         commitUI()
     }
     
@@ -330,6 +329,7 @@ extension InteractiveTextFieldWithInline {
         if updatedFrame != newFrame {
             updatedFrame = newFrame
             frame = newFrame
+            removeHeightConstraints()
         } else {
             textField.frame.size.height = updatedTextFieldHeight
             textField.heightConstraint?.constant = updatedTextFieldHeight
@@ -339,21 +339,20 @@ extension InteractiveTextFieldWithInline {
     fileprivate func updateInlineMessageVisibility() {
         inlineLabel.text = inlineMessage ?? validationMessage
         inlineLabel.isHidden = isInlineNilOrEmpty
-        if !isFrameZero { layoutIfNeeded() }
     }
     
     fileprivate func commitUI() {
         arrangedSubviews.forEach({$0.removeFromSuperview()})
         axis = .vertical
         
-        addArrangedSubview(textField)
-        addArrangedSubview(inlineLabel)
-        
         inlineLabel.isHidden = isInlineNilOrEmpty
         inlineLabel.font = inlineFont
         inlineLabel.iconSize = inlineIconSize
         inlineLabel.numberOfLines = numberOfLines
-        inlineLabel.iconPadding = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: inlineLabelIconPadding)
+        inlineLabel.spacing = inlineLabelIconPadding * 2
+        
+        addArrangedSubview(textField)
+        addArrangedSubview(inlineLabel)
         
         if let icon = inlineLabelIcon {
             inlineLabel.icon = icon
@@ -388,21 +387,12 @@ extension InteractiveTextFieldWithInline {
 
 fileprivate extension UIView {
     
-    @discardableResult
-    func removeHeightConstraint()-> [NSLayoutConstraint]? {
-        guard let heightConstraints = heightConstraints else {
-            return nil
-        }
-        removeConstraints(heightConstraints)
-        return heightConstraints
-    }
-    
-    var heightConstraints: [NSLayoutConstraint]? {
-        constraints.filter { $0.firstAttribute == .height || $0.secondAttribute == .height }
+    func removeHeightConstraints() {
+        removeConstraints(constraints.filter({$0.firstAttribute == .height || $0.secondAttribute == .height}))
     }
     
     var heightConstraint: NSLayoutConstraint? {
-        heightConstraints?.first
+        constraints.filter({$0.firstAttribute == .height}).first
     }
     
 }

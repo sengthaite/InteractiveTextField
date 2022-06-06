@@ -19,18 +19,13 @@ open class InteractiveInline: UIStackView {
         didSet {
             iconView.isHidden = icon == nil
             iconView.image = icon
+            layoutIfNeeded()
         }
     }
     
     public var iconSize: CGSize = CGSize(width: 14, height: 14) {
         didSet {
             iconView.frame.size = iconSize
-        }
-    }
-    
-    public var iconPadding: UIEdgeInsets = UIEdgeInsets(top: 0, left: 0, bottom: 0, right: 4) {
-        didSet {
-            layoutSubviews()
         }
     }
     
@@ -100,9 +95,5 @@ open class InteractiveInline: UIStackView {
 //            label.frame.size.height = label.frame.height
 //        }
 //    }
-    
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-    }
     
 }
