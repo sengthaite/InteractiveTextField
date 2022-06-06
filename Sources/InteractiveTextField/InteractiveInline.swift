@@ -9,9 +9,9 @@ import UIKit
 
 open class InteractiveInline: UIStackView {
     
-    public var position: UIStackView.Alignment = .top {
+    public var itemsAlignment: UIStackView.Alignment = .top {
         didSet {
-            alignment = position
+            alignment = itemsAlignment
         }
     }
     
@@ -76,7 +76,7 @@ open class InteractiveInline: UIStackView {
     fileprivate func commitUI() {
         addArrangedSubview(iconView)
         addArrangedSubview(label)
-        alignment = position
+        alignment = itemsAlignment
         clipsToBounds = true
         label.textAlignment = textAlignment
         iconView.isHidden = icon == nil

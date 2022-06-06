@@ -261,7 +261,7 @@ open class InteractiveTextFieldWithInline: UIStackView {
         }
     }
     
-    fileprivate let inlineLabel: InteractiveInline = {
+    public let inlineLabel: InteractiveInline = {
         let label = InteractiveInline()
         label.backgroundColor = .clear
         label.clipsToBounds = true
