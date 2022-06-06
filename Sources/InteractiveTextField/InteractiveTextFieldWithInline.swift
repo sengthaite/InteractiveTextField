@@ -10,28 +10,15 @@ open class InteractiveTextFieldWithInline: UIStackView {
         inlineLabel
     }
     
-    public var textFieldHeight: CGFloat = 54 {
+    public var textFieldHeight: CGFloat = .zero {
         didSet {
             updatedFrame = .zero
+            updatedTextFieldHeight = textFieldHeight
             layoutSubviews()
         }
     }
     
-    public var textFieldConstraintHeight: CGFloat? = nil {
-        didSet {
-            guard let height = textFieldConstraintHeight else {
-                if let textFieldHeightCostraint = textField.heightConstraint {
-                    textField.removeConstraint(textFieldHeightCostraint)
-                }
-                return
-            }
-            guard let textFieldHeightConstraint = textField.heightConstraint else {
-                textField.heightAnchor.constraint(equalToConstant: height).isActive = true
-                return
-            }
-            textFieldHeightConstraint.constant = height
-        }
-    }
+    fileprivate var updatedTextFieldHeight: CGFloat = 54
     
     public var rightView: UIView? {
         didSet {
@@ -233,6 +220,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
         }
     }
     
+    public var inlineMessage: String? {
+        didSet {
+            updateInlineMessageVisibility()
+        }
+    }
+    
     public var validationMessage: String? {
         didSet {
             updateInlineMessageVisibility()
@@ -285,6 +278,9 @@ open class InteractiveTextFieldWithInline: UIStackView {
     public init(frame: CGRect = .zero, config: InteractiveTextFieldConfig? = nil) {
         textField = InteractiveTextField(frame: frame, config: config)
         updatedFrame = frame
+        if frame.height > .zero {
+            updatedTextFieldHeight = frame.height
+        }
         super.init(frame: frame)
         commitUI()
     }
@@ -292,9 +288,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
     required public init(coder: NSCoder) {
         textField = InteractiveTextField()
         super.init(coder: coder)
-        if let _ = heightConstraints {
+        if let heightConstraint = heightConstraint {
+            if heightConstraint.constant > .zero {
+                updatedTextFieldHeight = heightConstraint.constant
+            }
             removeHeightConstraint()
-            textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
+            textField.heightAnchor.constraint(equalToConstant: updatedTextFieldHeight).isActive = true
         }
         commitUI()
     }
@@ -307,32 +306,40 @@ open class InteractiveTextFieldWithInline: UIStackView {
 
 extension InteractiveTextFieldWithInline {
     
+    fileprivate var isFrameZero: Bool {
+        frame == .zero
+    }
+    
     fileprivate var isInlineNilOrEmpty: Bool {
-        validationMessage?.isEmpty ?? true
+        inlineMessage?.isEmpty ?? validationMessage?.isEmpty ?? true
     }
     
     fileprivate var selfHeight: CGFloat {
-        isInlineNilOrEmpty ? textFieldHeight : textFieldHeight + spacing + inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
+        isInlineNilOrEmpty ? updatedTextFieldHeight : updatedTextFieldHeight + spacing + inlineLabel.systemLayoutSizeFitting(UIView.layoutFittingCompressedSize).height
     }
     
     fileprivate func performLayoutChange() {
+        if isFrameZero { return }
+        if updatedFrame.height == .zero && frame.height > .zero {
+            updatedTextFieldHeight = frame.height
+            textField.frame.size.height = updatedTextFieldHeight
+            textField.heightConstraint?.constant = updatedTextFieldHeight
+        }
         var newFrame = frame
         newFrame.size.height = selfHeight
         if updatedFrame != newFrame {
             updatedFrame = newFrame
-            textField.frame.size.height = textFieldHeight
             frame = newFrame
         } else {
-            textField.removeHeightConstraint()
-            textField.heightAnchor.constraint(equalToConstant: textFieldHeight).isActive = true
+            textField.frame.size.height = updatedTextFieldHeight
+            textField.heightConstraint?.constant = updatedTextFieldHeight
         }
     }
     
     fileprivate func updateInlineMessageVisibility() {
-        inlineLabel.text = validationMessage
+        inlineLabel.text = inlineMessage ?? validationMessage
         inlineLabel.isHidden = isInlineNilOrEmpty
-        updatedFrame = .zero
-        performLayoutChange()
+        if !isFrameZero { layoutIfNeeded() }
     }
     
     fileprivate func commitUI() {
