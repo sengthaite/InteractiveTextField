@@ -19,7 +19,6 @@ open class InteractiveInline: UIStackView {
         didSet {
             iconView.isHidden = icon == nil
             iconView.image = icon
-            layoutIfNeeded()
         }
     }
     
@@ -76,24 +75,14 @@ open class InteractiveInline: UIStackView {
     fileprivate func commitUI() {
         addArrangedSubview(iconView)
         addArrangedSubview(label)
+        axis = .horizontal
         alignment = itemsAlignment
-        clipsToBounds = true
-        label.textAlignment = textAlignment
-        iconView.isHidden = icon == nil
         iconView.image = icon
+        iconView.isHidden = icon == nil
+        iconView.contentMode = .scaleAspectFit
+        label.textAlignment = textAlignment
+        label.numberOfLines = numberOfLines
+        label.setContentHuggingPriority(UILayoutPriority(251), for: .horizontal)
     }
-    
-//    public override func layoutSubviews() {
-//        super.layoutSubviews()
-//        let iconSize = icon?.size ?? iconSize
-////        iconWrapper.frame = CGRect(x: 0, y: 0, width: iconSize.width + iconPadding.left + iconPadding.right, height: bounds.height)
-//        iconView.frame = CGRect(x: iconPadding.left, y: iconPadding.top, width: iconSize.width, height: iconSize.height)
-////        label.frame = CGRect(x: iconWrapper.frame.maxX, y: 0, width: bounds.width - iconWrapper.frame.maxX, height: 0)
-//        label.numberOfLines = numberOfLines
-//        if numberOfLines == 0 {
-//            label.sizeToFit()
-//            label.frame.size.height = label.frame.height
-//        }
-//    }
     
 }
