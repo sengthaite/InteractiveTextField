@@ -75,26 +75,21 @@ open class InteractiveInline: UIStackView {
     }
     
     fileprivate func commitUI() {
-        translatesAutoresizingMaskIntoConstraints = false
         axis = .horizontal
         alignment = itemsAlignment
+        distribution = .fillProportionally
         iconView.image = icon
         iconView.isHidden = icon == nil
         iconView.contentMode = .scaleAspectFit
         label.textAlignment = textAlignment
         label.numberOfLines = numberOfLines
+        label.setContentHuggingPriority(UILayoutPriority(251), for: .horizontal)
+        label.setContentHuggingPriority(UILayoutPriority(251), for: .vertical)
+        iconView.setContentHuggingPriority(UILayoutPriority(252), for: .horizontal)
+        iconView.setContentHuggingPriority(UILayoutPriority(252), for: .vertical)
         
         addArrangedSubview(iconView)
         addArrangedSubview(label)
-    }
-    
-    open override func layoutSubviews() {
-        super.layoutSubviews()
-        iconView.heightConstraint?.constant = iconSize.height
-        iconView.widthConstraint?.constant = iconSize.width
-        iconView.frame.size = iconSize
-        label.sizeToFit()
-        label.frame = CGRect(x: icon == nil ? 0 : spacing + iconSize.width, y: 0, width: bounds.width -  iconView.frame.maxY, height: label.frame.height)
     }
     
 }
