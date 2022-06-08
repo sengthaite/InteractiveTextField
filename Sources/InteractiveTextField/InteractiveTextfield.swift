@@ -22,7 +22,7 @@ open class InteractiveTextField: UITextField {
     
     open var numberFormatter: NumberFormatter?
     
-    open var uiConfig: InteractiveTextFieldConfig!
+    open var uiConfig = InteractiveTextFieldConfig()
     
     public var style: InteractiveTextFieldStyle = .normal {
         didSet {
