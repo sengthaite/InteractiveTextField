@@ -107,7 +107,7 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     public var textFieldUIConfig: InteractiveTextFieldConfig? {
         didSet {
-            textField.uiConfig = textFieldUIConfig
+            textField.uiConfig = textFieldUIConfig ?? InteractiveTextFieldConfig()
         }
     }
     
