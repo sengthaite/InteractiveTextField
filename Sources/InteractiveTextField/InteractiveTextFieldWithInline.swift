@@ -6,6 +6,12 @@ open class InteractiveTextFieldWithInline: UIStackView {
     
     fileprivate var updatedFrame: CGRect = .zero
     
+    fileprivate var defaultSpacing: CGFloat {
+        get {
+            spacing == .zero ? 8 : spacing
+        }
+    }
+    
     public var inlineView: InteractiveInline {
         inlineLabel
     }
@@ -347,12 +353,15 @@ extension InteractiveTextFieldWithInline {
     fileprivate func updateInlineMessageVisibility() {
         inlineLabel.text = inlineMessage ?? validationMessage
         inlineLabel.isHidden = isInlineNilOrEmpty
+        performLayoutChange()
     }
     
     fileprivate func commitUI() {
         arrangedSubviews.forEach({$0.removeFromSuperview()})
         axis = .vertical
+        spacing = defaultSpacing
         
+        inlineLabel.axis = .horizontal
         inlineLabel.isHidden = isInlineNilOrEmpty
         inlineLabel.font = inlineFont
         inlineLabel.iconSize = inlineIconSize
@@ -403,6 +412,10 @@ internal extension UIView {
     
     var heightConstraint: NSLayoutConstraint? {
         constraints.filter({$0.firstAttribute == .height}).first
+    }
+    
+    var widthConstraint: NSLayoutConstraint? {
+        constraints.filter({$0.firstAttribute == .width}).first
     }
     
 }
