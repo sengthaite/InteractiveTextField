@@ -1,6 +1,4 @@
 <div id="top"></div>
-
-<!-- PROJECT LOGO -->
 <br />
 <div align="center">
 
@@ -18,8 +16,6 @@
   </p>
 </div>
 
-
-<!-- TABLE OF CONTENTS -->
 <details>
   <summary>Table of Contents</summary>
   <ol>
@@ -38,9 +34,6 @@
   </ol>
 </details>
 
-
-
-<!-- ABOUT THE PROJECT -->
 ## About The Package
 
 Constructing TextField with customizations such as <i>interactive border color and width</i>, <i>validations</i>, and <i>material styling</i> is such a complicated process while developing an iOS application. That's why this package is created to support and speed up the development.
@@ -51,8 +44,6 @@ Some Features:
 * Statically define config which assist on customizing some properties of the textfield
 * Validation logic with regular expression
 
-
-<!-- GETTING STARTED -->
 ## Getting Started
 
 Before using the package, please check this demo <a href="https://github.com/sengthaite/InteractiveTextFieldDemo">InteractiveTextFieldDemo</a> to have a look at some examples.
@@ -82,8 +73,6 @@ _Below is the installation of the package._
 
 Distributed under the MIT License. See `LICENSE.md` for more information.
 
-
-<!-- CONTACT -->
 ## Contact
 
 Sengthai Te - (https://twitter.com/SengthaiTe) - sengthaite@gmail.com
