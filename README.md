@@ -44,6 +44,12 @@ Some Features:
 * Statically define config which assist on customizing some properties of the textfield
 * Validation logic with regular expression
 
+![TextField-Placeholder](../assets/placeholder.JPG?raw=true)
+![TextField-Inline-Message](../assets/inline_message.JPG?raw=true)
+![TextField-Inline-Error](../assets/inline_error.JPG?raw=true)
+![TextField-Title](../assets/title.JPG?raw=true)
+![TextField-Prefix](../assets/prefix.JPG?raw=true)
+
 ## Getting Started
 
 Before using the package, please check this demo <a href="https://github.com/sengthaite/InteractiveTextFieldDemo">InteractiveTextFieldDemo</a> to have a look at some examples.
