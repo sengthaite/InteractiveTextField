@@ -335,8 +335,6 @@ extension InteractiveTextField {
     internal func commitUI() {
         delegate = self
         addTarget(self, action: #selector(textDidChanged), for: .editingChanged)
-        textColor = uiConfig.textColor
-        layer.cornerRadius = uiConfig.cornerRadius
         setBorder(isActive: isActive)
         if uiConfig.enablePlaceholder {
             placeholderLabel.backgroundColor = .clear
@@ -350,6 +348,9 @@ extension InteractiveTextField {
            let rightButton = rightView as? UIButton {
             maskViewBound.size.width = rightButton.frame.minX
         }
+        
+        textColor = uiConfig.textColor
+        layer.cornerRadius = uiConfig.cornerRadius
         textFieldMaskView.frame = maskViewBound
         
         var leftViewMaxX: CGFloat = uiConfig.textRectMinX
